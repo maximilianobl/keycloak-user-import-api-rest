@@ -1,0 +1,94 @@
+# Temas base: https://repo1.maven.org/maven2/org/keycloak/keycloak-themes/20.0.1/
+
+version: "3.7"
+
+services:
+  keycloak:
+    ######################## Export realm ##################################
+    ######################## Exportar a directorio #########################
+    # docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
+    # -Djboss.socket.binding.port-offset=100 \
+    # -Dkeycloak.migration.action=export \
+    # -Dkeycloak.migration.provider=dir \
+    # -Dkeycloak.migration.realmName=starfleet \
+    # -Dkeycloak.migration.dir=/tmp/export
+    ######################## Exportar a unico archivo #######################
+    # docker exec -it keycloak /opt/jboss/keycloak/bin/standalone.sh \
+    # -Djboss.socket.binding.port-offset=100 \
+    # -Dkeycloak.migration.action=export \
+    # -Dkeycloak.migration.provider=singleFile \
+    # -Dkeycloak.migration.realmName=starfleet \
+    # -Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+    # -Dkeycloak.migration.file=/tmp/export/starfleet-full-realm.json
+
+    #image: quay.io/keycloak/keycloak:latest
+    image: bitnami/keycloak:20.0.1
+    container_name: keycloak_20
+    environment:
+      # DB_VENDOR: POSTGRES
+      # DB_ADDR: postgres
+      # DB_DATABASE: keycloak
+      # DB_USER: keycloak
+      # DB_PASSWORD: keycloak
+      # DB_SCHEMA: public        
+      # KEYCLOAK_USER: admin
+      # KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_ADMIN_USER: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_DATABASE_HOST: postgres
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_NAME: keycloak
+      KEYCLOAK_DATABASE_USER: keycloak
+      KEYCLOAK_DATABASE_PASSWORD: keycloak
+      KEYCLOAK_DATABASE_SCHEMA: public
+      KEYCLOAK_EXTRA_ARGS: "-Dkeycloak.profile.feature.scripts=enabled"
+    ports:
+      - 8080:8080
+    volumes:
+      - ./keycloak/export:/tmp/export
+      - ./rus-theme:/opt/bitnami/keycloak/themes/rus-theme
+      - ./keycloak/configuration/standalone-ha.xml:/bitnami/keycloak/configuration/standalone-ha.xml:ro
+    #command: ["-Dkeycloak.profile.feature.upload_scripts=enabled", "/opt/keycloak/bin/kc.sh", "start-dev"]
+    command:
+      - /bin/bash
+      - -c 
+      - |
+        # /opt/bitnami/scripts/keycloak/setup.sh && /opt/bitnami/keycloak/bin/kc.sh start-dev
+        /opt/bitnami/keycloak/bin/kc.sh start-dev
+
+    depends_on:
+      - postgres
+    
+  postgres:
+    image: postgres:9.6
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      ALLOW_EMPTY_PASSWORD: yes
+    ports:
+    - "5432:5432"
+  
+  mailhog:
+    # Conectarse al nombre del container para acceder
+    # Ejemplo: mailhog:1025
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    container_name: mailhog
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+  
+  # mailcatcher:
+  #   restart: on-failure
+  #   image: dockage/mailcatcher
+  #   ports:
+  #   - "1080:1080" # web ui
+  #   - "1025:1025" # smtp server
+volumes:
+  postgres_data:
+    driver: local
