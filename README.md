@@ -20,6 +20,7 @@ En la sección Realm Settings, ingresar a la pestaña “Themes” y en la opci�
 Dentro de esta misma sección pero en la pestaña “Email” configuramos el template y los datos para el smtp. En este caso para el SMTP estamos usando mailhog para facilitar las pruebas en modo desarrollo.
 
 Configurar el SMTP de la siguiente manera:
+
 HOST: mailhog
 PORT: 1025
 
