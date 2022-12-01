@@ -4,4 +4,4 @@ Contiene un script de Python y un archivo csv para automatizar el registro de us
 Se utilizó para la versión de Keycloak:20.0.1
 
 # Para iniciar la importación
-    python3 import-users-new.py
+    python3 import-users.py
