@@ -22,6 +22,7 @@ Dentro de esta misma sección pero en la pestaña “Email” configuramos el te
 Configurar el SMTP de la siguiente manera:
 
 HOST: mailhog
+
 PORT: 1025
 
 Es posible acceder a la interfaz en la siguiente url: http://localhost:8025/
