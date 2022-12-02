@@ -98,7 +98,7 @@ def create_user(token: str):
                 # Ahora le asignamos el rol al usuario
                 if (response.status_code in (201, 409)):
                     if (row['rol'] != ''):
-                        user_rol(token, row)
+                        user_rol(token, row["username"], row["rol"], CLIENT_ID)
                     if (row['grupo'] != ''):
                         user_group(token, row, row["username"])
                     if (row['email'] != ''):
@@ -111,7 +111,7 @@ def create_user(token: str):
     #return response
 
 
-# Obtenemos id, username del usuario desde Keycloak
+# Retonamos el id del usuario desde Keycloak
 def get_usr_id(token: str, username):
     
     url = BASE_URL + "/admin/realms/"+ REALM_URL +"/users?username="+ username
@@ -136,19 +136,11 @@ def get_usr_id(token: str, username):
     return usr_id
 
 
-# Verificamos formato del email
-def validarEmail(email):
-   pat = "^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
-   if re.match(pat,email):
-      return True
-   return False
 
-
-# Asociamos roles al usuario
-def user_rol(token: str, csv_data):
-
-    # Obtenemos id, username del usuario desde Keycloak
-    url = BASE_URL + "/admin/realms/"+ REALM_URL +"/users?username="+ csv_data['username']
+# Retonamos el id del cliente desde Keycloak
+def get_client_id(token: str, clientId):
+  
+    url = BASE_URL + "/admin/realms/master/clients?clientId=" + clientId
 
     headers = {
                 "Authorization": f"Bearer {token}",
@@ -158,48 +150,112 @@ def user_rol(token: str, csv_data):
             
     payload={}
 
-    responseUsr = requests.get(
-                url,
-                headers=headers,
-                data=payload
-            ) 
+    responseRolClient = requests.get(
+            url,
+            headers=headers,
+            data=payload
+        ) 
+
+    if (responseRolClient.text != '[]'):
+        client_id=json.loads(responseRolClient.text)[0]['id']
+    else:
+        client_id = 'not_exists'
+    return client_id
 
 
-    # Obtener datos del rol
-    if (responseUsr.status_code==200):
 
-        usr_id=json.loads(responseUsr.text)[0]['id']
-        user_name=json.loads(responseUsr.text)[0]['username']
 
-        url = BASE_URL + "/admin/realms/"+ REALM_URL + "/roles/"+ csv_data['rol']
+# Verificamos formato del email
+def validarEmail(email):
+   pat = "^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
+   if re.match(pat,email):
+      return True
+   return False
 
-        responseRol = requests.get(
-                url,
-                headers=headers,
-                data=payload
-            ) 
 
-        if (responseRol.status_code==200):     
-            rol_id=json.loads(responseRol.text)['id']
-            rol_name=json.loads(responseRol.text)['name']
+
+
+
+# Asociamos roles al usuario
+def user_rol(token: str, username, rol, clientId):
+
+    user_id = get_usr_id(token, username)
+
+    # Busco el rol en Realm roles
+    url = BASE_URL + "/admin/realms/"+ REALM_URL + "/roles/"+ rol
+
+    headers = {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                'Accept': 'application/json'
+            }
+    payload={}
+
+    responseRol = requests.get(
+            url,
+            headers=headers,
+            data=payload
+        ) 
+    
+    if (responseRol.status_code==200):     
+        rol_id=json.loads(responseRol.text)['id']
+        rol_name=json.loads(responseRol.text)['name']
+
+        # Mapeamos el Rol en el Usuario
+        url = BASE_URL + "/admin/realms/"+ REALM_URL + "/users/"+ user_id + "/role-mappings/realm"
+
+        responseUsrRol = requests.post(
+            url,
+            headers=headers,
+            data='['+ responseRol.text + ']'
+        ) 
+
+        if (responseUsrRol.status_code==204):
+            print('Response[%s] - ROL REALM: %s: %s ' % (responseUsrRol.status_code, rol_name, '{"OK": "Rol asociado con éxito"}'))
+        else:
+            print('Response[%s] - ROL REALM: %s: %s ' % (responseUsrRol.status_code, rol, responseUsrRol.text))
+    else:
+            print('Response[%s] - ROL REALM: %s: %s ' % (responseRol.status_code, rol, responseRol.text))
+    
+    
+    # Busco el rol en el cliente
+    client_id = get_client_id(token, clientId)
+
+    url_client_rol = BASE_URL + "/admin/realms/master/clients/"+ client_id + "/roles?search=" + rol
+
+    responseRolClient = requests.get(
+            url=url_client_rol,
+            headers=headers,
+            data=payload
+        ) 
+    
+    if (responseRolClient.status_code==200):
+        if (responseRolClient.text != '[]'):
+            # rol_id=json.loads(responseRolClient.text)['id']
+            rol_client_name=json.loads(responseRolClient.text)[0]['name']
 
             # Mapeamos el Rol en el Usuario
-            url = BASE_URL + "/admin/realms/"+ REALM_URL + "/users/"+ usr_id + "/role-mappings/realm"
-
-            #responseUsrRol = requests.request("POST", getRolUsrUrl, headers=headers_json, data='['+responseRol.text+']')
+            url = BASE_URL + "/admin/realms/"+ REALM_URL + "/users/"+ user_id + "/role-mappings/clients/" + client_id
 
             responseUsrRol = requests.post(
                 url,
                 headers=headers,
-                data='['+ responseRol.text + ']'
+                data=responseRolClient.text
             ) 
 
             if (responseUsrRol.status_code==204):
-                print('Response[%s] - ROL: %s: %s ' % (responseUsrRol.status_code, rol_name, '{"OK": "Rol asociado con éxito"}'))
+                print('Response[%s] - ROL CLIENT: %s: %s ' % (responseUsrRol.status_code, rol_client_name, '{"OK": "Rol asociado con éxito"}'))
             else:
-                print('Response[%s] - ROL: %s: %s ' % (responseUsrRol.status_code, csv_data['rol'], responseUsrRol.text))
-        else:
-                print('Response[%s] - ROL: %s: %s ' % (responseRol.status_code, csv_data['rol'], responseRol.text))
+                print('Response[%s] - ROL CLIENT: %s: %s ' % (responseUsrRol.status_code, rol, responseUsrRol.text))
+        else: 
+            print('Response[%s] - ROL CLIENT: %s: %s ' % ('500', rol, '{"error":"Could not find role"}'))
+    else:
+            print('Response[%s] - ROL CLIENT: %s: %s ' % (responseRolClient.status_code, rol, responseRolClient.text))
+            
+
+
+
+
 
 # Asociamos el grupo al usuario
 def user_group(token: str, csv_data, username):

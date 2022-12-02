@@ -1,5 +1,5 @@
 username,firstname,lastname,email,mobile,emailverified,atr_user_sis,atr_phone,rol,grupo
-demouser1,demouser1,demouser1lastname,demouser1@gmail.com,1234566780,true,visbrokerprueba,3194258974,pepito,grupo_fake
+demouser1,demouser1,demouser1lastname,demouser1@gmail.com,1234566780,true,visbrokerprueba,3794258974,Strong,grupo_fake
 demouser2,demouser2,demouser2lastname,demouser2@gmail.com,1234566780,true,nicobres,0114789562,admin,test
 demouser3,demouser3,demouser3lastname,demouser3@gmail.com,1234566780,true,pepe,3775487958,user_esp,interno
 demouser4,demouser4,demouser4lastname,demouser4@gmail.com,1234566780,true,maxi.blasco,3789587412,rol_fake,devops
