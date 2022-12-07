@@ -3,7 +3,9 @@ Script Python para importar usuarios, grupos y roles desde un csv.
 Además, al finalizar la importación, envía un email al usuario con un token temporal para que active su email y modifique su password.
 
 El proyecto cuenta con dos scripts de Python, cada uno con su archivo csv correspondiente. 
+
 Uno es para dar de alta los roles en **Realm Rol** o en los roles del **Client**.
+
 El otro es para automatizar el registro de usuarios, asociar sus grupos y roles aprovechando las API REST de Keycloak.
 
 > Se utilizó para la versión de Keycloak:20.0.1
@@ -34,6 +36,7 @@ Es posible acceder a la interfaz en la siguiente url: http://localhost:8025/
 
 ## Para iniciar la importación
 Primero creamos los roles con:  `python3 import-roles.py`, si todo se creó correctamente, utilizar el otro script.
+
 Creamos los usuarios, asociamos sus roles y grupos: `python3 import-users.py`
     
 > Es importante que los roles y grupos cargados en el csv y que se desean relacionar a los usuarios existan previamente en Keycloak.
