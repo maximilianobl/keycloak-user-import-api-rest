@@ -1,0 +1,7 @@
+nombre,descripcion,es_cliente,client_id
+rol_1,Rol demo 1 generado en el realm,0,
+,Rol demo 2 generado en el realm,0,
+rol_3,Rol demo 3 generado en el realm,1,
+rol_4,Rol demo 4 generado en el realm,1,roles_cli
+,Rol demo 5 generado en el realm,1,roles_cli
+rol_6,Rol demo 6 generado en el realm,1,roles_cli
