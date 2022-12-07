@@ -32,4 +32,12 @@ Es posible acceder a la interfaz en la siguiente url: http://localhost:8025/
     
 Es importante que los roles y grupos cargados en el csv y que se desean relacionar a los usuarios existan previamente en Keycloak.
 
+Install the dependencies and devDependencies and start the server.
+
+```sh
+cd dillinger
+npm i
+node app
+```
+
 
